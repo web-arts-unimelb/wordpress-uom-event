@@ -11,9 +11,6 @@
 
 <?php
 
-/* TODO: assign this post type to category!!!!!!!!!!!!!!!!!!!! */
-
-
 require_once(ABSPATH . '/wp-admin/includes/post.php');
 require_once(ABSPATH . '/wp-admin/includes/import.php');
 
@@ -37,7 +34,6 @@ if(!class_exists("xmltowp")) {
 		}
 
 		function get_school_posts() {
-			/*
 			$schools = array(
 				'Asia Institute',
 				'Graduate School of Humanities and Social Sciences',
@@ -47,13 +43,13 @@ if(!class_exists("xmltowp")) {
 				'School of Languages and Linguistics',
 				'School of Social and Political Sciences',
 			);	
-			*/
 
+			/*
 			$schools = array(
 				'Melbourne School of Government',
 				'School Of Culture And Communication'
 			);
-
+			*/
 
 			array_walk($schools, '_add_encoded_space_to_name');
 
@@ -184,14 +180,7 @@ if(!class_exists("xmltowp")) {
 		function import_posts() {
 			global $wpdb;
 
-			/*
-			echo "<pre>";
-			echo "--import--";
-      print_r($this->posts);
-      echo "</pre>";
-			*/
-
-			foreach($this->posts as $school_posts) {
+			foreach($this->posts as $school_key => $school_posts) {
 				foreach ($school_posts as $post) {
 					extract($post);
 					if($post_id = post_exists($post_title, $post_content)) {
@@ -222,6 +211,12 @@ if(!class_exists("xmltowp")) {
 					
 						add_post_meta($post_id, 'event_org_link', $event_org_link);
 
+						// uom_event post belongs to only 1 category.
+						$cat_id = $this->_translate_uom_event_category($school_key);
+						// This will insert into wp_term_taxonomy
+						// term_taxnonomy_id (field) -> term_id (field)-> wp_term (table) -> category name (field)
+						wp_set_post_categories($post_id, array($cat_id));
+
 						// Log
 						$wpdb->insert(
 							'wp_uom_event_log',
@@ -231,9 +226,9 @@ if(!class_exists("xmltowp")) {
 							)
 						);
 					}
-				}
+				} // End foreach
 			} // End foreach
-		} // End foreach
+		} 
 
 		private function _build_end_point($school) {
 			$part_get_from_tag = "http://events.unimelb.edu.au/api/v1/events/current/tagged/";
@@ -349,6 +344,44 @@ if(!class_exists("xmltowp")) {
 		private function _theme_convert_date($time_text, $format = 'Y-m-d H:i:s') {
 			$date = new DateTime($time_text);
       return $date->format($format);
+		}
+
+		private function _translate_uom_event_category($school_name) {
+			$school_name = str_replace("%20", " ", $school_name);
+
+			//test
+			/*
+			echo "<pre>";
+			print_r($school_name);
+			echo "</pre>";
+			*/
+
+			if($school_name == 'Asia Institute') {
+				$category_id = 3;	
+			}
+			elseif($school_name == 'Graduate School of Humanities and Social Sciences') {
+				$category_id = 7;
+			}
+			elseif($school_name == 'Melbourne School of Government') {
+				$category_id = 26;
+      }			
+			elseif($school_name == 'School of Historical and Philosophical Studies') {
+				$category_id = 11;
+      }
+			elseif($school_name == 'School Of Culture And Communication') {
+				$category_id = 4;
+      }
+			elseif($school_name == 'School of Languages and Linguistics') {
+				$category_id = 10;
+      }
+			elseif($school_name == 'School of Social and Political Sciences') {
+				$category_id = 12;
+      }
+			else {
+				$category_id = 1;
+			}
+
+			return $category_id;
 		}
 
 	} // End class

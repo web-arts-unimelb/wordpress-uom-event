@@ -1,0 +1,282 @@
+SimpleXMLElement Object
+(
+    [@attributes] => Array
+        (
+            [type] => array
+        )
+
+    [api-v1-entities-event-item] => Array
+        (
+            [0] => SimpleXMLElement Object
+                (
+                    [id] => 3524
+                    [title] => Professor Martin Seligman - Positive Psychology: The Cutting Edge - Public Lecture $65.00
+                    [event-type] => Other
+                    [has-livestream] => false
+                    [host] => Melbourne Graduate School of Education
+                    [start-time] => 2014-02-07T18:30:00+11:00
+                    [public] => true
+                    [end-time] => 2014-02-07T19:30:00+11:00
+                    [sold-out] => false
+                    [cancelled] => false
+                    [speaker] => SimpleXMLElement Object
+                        (
+                            [@attributes] => Array
+                                (
+                                    [nil] => true
+                                )
+
+                        )
+
+                    [presenters] => SimpleXMLElement Object
+                        (
+                            [@attributes] => Array
+                                (
+                                    [type] => array
+                                )
+
+                            [presenter] => SimpleXMLElement Object
+                                (
+                                    [id] => 1691
+                                    [title] => Professor
+                                    [first-name] => Martin
+                                    [last-name] => Seligman
+                                    [post-nominal] => SimpleXMLElement Object
+                                        (
+                                        )
+
+                                    [organisation] => University of Pennsylvania
+                                    [position-title] => Zellerbach Family Professor of Psychology, Director of the Penn Positive Psychology Center and Director of the Penn Master of Applied Positive Psychology program
+                                    [biography] => Professor Martin Seligman is Zellerbach Family Professor of Psychology, Director of the Penn Positive Psychology Center and Director of the Penn Master of Applied Positive Psychology program, University of Pennsylvania. Since 2000, his main mission has been the promotion of the field of positive psychology.
+
+He is a best-selling author with more than 250 scholarly publications and 20 books including Flourish (2011), Authentic Happiness (2002), Learned Optimism (1991), What You Can Change and What You Can’t (1993), The Optimistic Child (1995), Helplessness (1975, 1993) and Abnormal Psychology (1982, 1988, 1995, with David Rosenhan).
+                                    [biography-html] => 
+
+Professor Martin Seligman is Zellerbach Family Professor of Psychology, Director of the Penn Positive Psychology Center and Director of the Penn Master of Applied Positive Psychology program, University of Pennsylvania. Since 2000, his main mission has been the promotion of the field of positive psychology.
+
+
+He is a best-selling author with more than 250 scholarly publications and 20 books including Flourish (2011), Authentic Happiness (2002), Learned Optimism (1991), What You Can Change and What You Can’t (1993), The Optimistic Child (1995), Helplessness (1975, 1993) and Abnormal Psychology (1982, 1988, 1995, with David Rosenhan).
+
+
+                                    [biography-text] => Professor Martin Seligman is Zellerbach Family Professor of Psychology, Director of the Penn Positive Psychology Center and Director of the Penn Master of Applied Positive Psychology program, University of Pennsylvania. Since 2000, his main mission has been the promotion of the field of positive psychology.
+
+He is a bestselling author with more than 250 scholarly publications and 20 books including Flourish (2011), Authentic Happiness (2002), Learned Optimism (1991), What You Can Change and What You Can’t (1993), The Optimistic Child (1995), Helplessness (1975, 1993) and Abnormal Psychology (1982, 1988, 1995, with David Rosenhan).
+                                    [country] => US
+                                    [content-approved-by-speaker] => SimpleXMLElement Object
+                                        (
+                                            [@attributes] => Array
+                                                (
+                                                    [nil] => true
+                                                )
+
+                                        )
+
+                                    [find-an-expert-url] => SimpleXMLElement Object
+                                        (
+                                            [@attributes] => Array
+                                                (
+                                                    [nil] => true
+                                                )
+
+                                        )
+
+                                    [photo-url] => https://ergosphere.s3.amazonaws.com/uploads/presenter/photo/1691/Martin-Seligman.jpg
+                                    [link] => http://events.unimelb.edu.au/presenters/1691-professor-martin-seligman
+                                )
+
+                        )
+
+                    [img-url] => https://ergosphere.s3.amazonaws.com/uploads/image/image/6/thumbnail-uom-crest.jpg
+                    [description] => Professor Martin Seligman, founder of the discipline of positive psychology, world-leading psychologist and expert adviser on well-being will give a public lecture on how the principles of positive psychology can be learned and applied in any field of human endeavour.
+
+Martin Seligman is a leading authority on the topics of resilience, learned helplessness, optimism and pessimism, and a recognised authority on interventions that prevent depression and build strengths and well-being. He will discuss the critical factors that contribute to our well-being: positive emotions, engagement, family and social relationships, meaning and accomplishment.
+
+He will review the latest developments in building and measuring these factors in relation to education, neuroscience, health, big data and the psychological health and resilience of young army soldiers.  Martin Seligman will provide an entertaining
+and thought-provoking introduction to the discipline for non-specialists.
+
+                    [description-html] => 
+
+Professor Martin Seligman, founder of the discipline of positive psychology, world-leading psychologist and expert adviser on well-being will give a public lecture on how the principles of positive psychology can be learned and applied in any field of human endeavour.
+
+
+Martin Seligman is a leading authority on the topics of resilience, learned helplessness, optimism and pessimism, and a recognised authority on interventions that prevent depression and build strengths and well-being. He will discuss the critical factors that contribute to our well-being: positive emotions, engagement, family and social relationships, meaning and accomplishment.
+
+
+He will review the latest developments in building and measuring these factors in relation to education, neuroscience, health, big data and the psychological health and resilience of young army soldiers. Martin Seligman will provide an entertaining and thought-provoking introduction to the discipline for non-specialists.
+
+
+                    [description-text] => Professor Martin Seligman, founder of the discipline of positive psychology, worldleading psychologist and expert adviser on wellbeing will give a public lecture on how the principles of positive psychology can be learned and applied in any field of human endeavour.
+
+Martin Seligman is a leading authority on the topics of resilience, learned helplessness, optimism and pessimism, and a recognised authority on interventions that prevent depression and build strengths and wellbeing. He will discuss the critical factors that contribute to our wellbeing: positive emotions, engagement, family and social relationships, meaning and accomplishment.
+
+He will review the latest developments in building and measuring these factors in relation to education, neuroscience, health, big data and the psychological health and resilience of young army soldiers.  Martin Seligman will provide an entertaining
+and thoughtprovoking introduction to the discipline for nonspecialists.
+                    [location] => SimpleXMLElement Object
+                        (
+                            [address] => SimpleXMLElement Object
+                                (
+                                )
+
+                            [building] => Swanston Street
+                            [room-or-theatre] => Melbourne Town Hall
+                        )
+
+                    [information] => SimpleXMLElement Object
+                        (
+                            [email] => admin@baldwinconsulting.com.au
+                            [phone] => +61 3 9645 9858
+                            [url] => SimpleXMLElement Object
+                                (
+                                )
+
+                        )
+
+                    [booking] => SimpleXMLElement Object
+                        (
+                            [email] => SimpleXMLElement Object
+                                (
+                                )
+
+                            [phone] => SimpleXMLElement Object
+                                (
+                                )
+
+                            [url] => http://education.unimelb.edu.au/positivepsychology2014/public_lecture
+                        )
+
+                    [bookings-required] => true
+                    [capacity] => SimpleXMLElement Object
+                        (
+                            [@attributes] => Array
+                                (
+                                    [nil] => true
+                                )
+
+                        )
+
+                    [link] => http://events.unimelb.edu.au/events/3524-professor-martin-seligman-positive-psychology-the-cutting-edge
+                )
+
+            [1] => SimpleXMLElement Object
+                (
+                    [id] => 3523
+                    [title] => Positive Psychology & Well-being Conference - "Developing a Sustained Impact"
+                    [event-type] => Other
+                    [has-livestream] => false
+                    [host] => Melbourne Graduate School of Education
+                    [start-time] => 2014-02-07T09:00:00+11:00
+                    [public] => true
+                    [end-time] => 2014-02-09T16:30:00+11:00
+                    [sold-out] => false
+                    [cancelled] => false
+                    [speaker] => SimpleXMLElement Object
+                        (
+                            [@attributes] => Array
+                                (
+                                    [nil] => true
+                                )
+
+                        )
+
+                    [presenters] => SimpleXMLElement Object
+                        (
+                            [@attributes] => Array
+                                (
+                                    [type] => array
+                                )
+
+                        )
+
+                    [img-url] => https://ergosphere.s3.amazonaws.com/uploads/image/image/6/thumbnail-uom-crest.jpg
+                    [description] => The Australian Positive Psychology and Well-Being Conference is a collaborative and community-based event, which began with seed-funding donated by the Coaching Psychology Unit at the University of Sydney. The aim is to make positive psychology accessible to all and to host the conference in a range of different locations within Australia.
+
+The Fourth Conference marks an important milestone for the growth of positive psychology in Australia and is a testament to the rapid expansion of researchers and practitioners who are engaging with positive psychology in our country. The overall conference theme is “Sustained Impact’ as we pose the question of how positive psychology can continue to grow as a discipline.
+
+We have both a national and an international focus in this conference with three eminent International speakers: Professor Martin Seligman (USA), Professor Felicia Huppert (UK), Professor PENG Kaiping (China). We are also delighted to have a number of internationally renowned Australian researchers presenting their latest findings: Professor Nick Allen, Professor Donna Cross and Associate Professor Nikki Rickard.
+
+The conference provides an opportunity for psychologists, educators, performers and artists, organisational and community practitioners, policy makers, scholars and students to examine recent developments and evidence-based research across the discipline. This diverse group promises to provide opportunities to stimulate the intellect and to advance practice and networks.
+
+The ‘Fast and Fantastic Findings’ sessions are a new edition to the positive psychology conference and will be an engaging way for the audience  to hear from both leading researchers and student researchers in the field.
+
+ The conference promises interactive and experiential activities that both signify and reflect the spirit of positive psychology.
+
+The conference is a timely way for Positive Psychology at the Melbourne Graduate School of Education  to connect with the community and assist with the exchange and translation of exciting new ideas in the discipline. Hosted at the University of Melbourne, the background of our 160 year old campus and its beautiful grounds will amplify the positive psychology experience of delegates. We hope you can join us.
+                    [description-html] => 
+
+The Australian Positive Psychology and Well-Being Conference is a collaborative and community-based event, which began with seed-funding donated by the Coaching Psychology Unit at the University of Sydney. The aim is to make positive psychology accessible to all and to host the conference in a range of different locations within Australia.
+
+
+The Fourth Conference marks an important milestone for the growth of positive psychology in Australia and is a testament to the rapid expansion of researchers and practitioners who are engaging with positive psychology in our country. The overall conference theme is “Sustained Impact’ as we pose the question of how positive psychology can continue to grow as a discipline.
+
+
+We have both a national and an international focus in this conference with three eminent International speakers: Professor Martin Seligman (USA), Professor Felicia Huppert (UK), Professor PENG Kaiping (China). We are also delighted to have a number of internationally renowned Australian researchers presenting their latest findings: Professor Nick Allen, Professor Donna Cross and Associate Professor Nikki Rickard.
+
+
+The conference provides an opportunity for psychologists, educators, performers and artists, organisational and community practitioners, policy makers, scholars and students to examine recent developments and evidence-based research across the discipline. This diverse group promises to provide opportunities to stimulate the intellect and to advance practice and networks.
+
+
+The ‘Fast and Fantastic Findings’ sessions are a new edition to the positive psychology conference and will be an engaging way for the audience to hear from both leading researchers and student researchers in the field.
+
+
+The conference promises interactive and experiential activities that both signify and reflect the spirit of positive psychology.
+
+
+The conference is a timely way for Positive Psychology at the Melbourne Graduate School of Education to connect with the community and assist with the exchange and translation of exciting new ideas in the discipline. Hosted at the University of Melbourne, the background of our 160 year old campus and its beautiful grounds will amplify the positive psychology experience of delegates. We hope you can join us.
+
+
+                    [description-text] => The Australian Positive Psychology and WellBeing Conference is a collaborative and communitybased event, which began with seedfunding donated by the Coaching Psychology Unit at the University of Sydney. The aim is to make positive psychology accessible to all and to host the conference in a range of different locations within Australia.
+
+The Fourth Conference marks an important milestone for the growth of positive psychology in Australia and is a testament to the rapid expansion of researchers and practitioners who are engaging with positive psychology in our country. The overall conference theme is “Sustained Impact’ as we pose the question of how positive psychology can continue to grow as a discipline.
+
+We have both a national and an international focus in this conference with three eminent International speakers: Professor Martin Seligman (USA), Professor Felicia Huppert (UK), Professor PENG Kaiping (China). We are also delighted to have a number of internationally renowned Australian researchers presenting their latest findings: Professor Nick Allen, Professor Donna Cross and Associate Professor Nikki Rickard.
+
+The conference provides an opportunity for psychologists, educators, performers and artists, organisational and community practitioners, policy makers, scholars and students to examine recent developments and evidencebased research across the discipline. This diverse group promises to provide opportunities to stimulate the intellect and to advance practice and networks.
+
+The ‘Fast and Fantastic Findings’ sessions are a new edition to the positive psychology conference and will be an engaging way for the audience  to hear from both leading researchers and student researchers in the field.
+
+The conference promises interactive and experiential activities that both signify and reflect the spirit of positive psychology.
+
+The conference is a timely way for Positive Psychology at the Melbourne Graduate School of Education  to connect with the community and assist with the exchange and translation of exciting new ideas in the discipline. Hosted at the University of Melbourne, the background of our 160 year old campus and its beautiful grounds will amplify the positive psychology experience of delegates. We hope you can join us.
+                    [location] => SimpleXMLElement Object
+                        (
+                            [address] => (The Spot) 198 Berkeley Street, Carlton
+                            [building] => Business and Economics Building
+                            [room-or-theatre] => Basement Theatre
+                        )
+
+                    [information] => SimpleXMLElement Object
+                        (
+                            [email] => admin@baldwinconsulting.com.au
+                            [phone] => +61 3 9645 9858
+                            [url] => http://education.unimelb.edu.au/positivepsychology2014/home
+                        )
+
+                    [booking] => SimpleXMLElement Object
+                        (
+                            [email] => SimpleXMLElement Object
+                                (
+                                )
+
+                            [phone] => SimpleXMLElement Object
+                                (
+                                )
+
+                            [url] => http://education.unimelb.edu.au/positivepsychology2014/registration
+                        )
+
+                    [bookings-required] => true
+                    [capacity] => SimpleXMLElement Object
+                        (
+                            [@attributes] => Array
+                                (
+                                    [nil] => true
+                                )
+
+                        )
+
+                    [link] => http://events.unimelb.edu.au/events/3523-positive-psychology-well-being-conference-developing-a-sustained-impact
+                )
+
+        )
+
+)

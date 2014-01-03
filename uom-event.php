@@ -211,11 +211,13 @@ if(!class_exists("xmltowp")) {
 					
 						add_post_meta($post_id, 'event_org_link', $event_org_link);
 
-						// uom_event post belongs to only 1 category.
-						$cat_id = $this->_translate_uom_event_category($school_key);
+						// Category
+						$school_cat_id = $this->_translate_uom_event_category($school_key);
+						$event_cat_id = 5;						
+
 						// This will insert into wp_term_taxonomy
 						// term_taxnonomy_id (field) -> term_id (field)-> wp_term (table) -> category name (field)
-						wp_set_post_categories($post_id, array($cat_id));
+						wp_set_post_categories($post_id, array($school_cat_id, $event_cat_id));
 
 						// Log
 						$wpdb->insert(

@@ -140,7 +140,7 @@ if(!class_exists("xmltowp")) {
 
 					// Force to custom post type
       		$post_type = "uom_event";
-      		$post_author = 1;
+      		$post_author = 3; // Christ strong as poster
       		$post_date = date("Y-m-d H:i:s"); //"2012-05-01 23:36:03";
       		$post_date_gmt = date("Y-m-d H:i:s"); //"2012-05-01 23:36:03";
       		$post_status = 'publish';
@@ -407,7 +407,7 @@ function uom_event_cpt() {
 
 function cron_add_mytime($schedules) {
 	$schedules['mytime'] = array(
-    'interval' => 120,
+    'interval' => 21600,
     'display' => __( 'My scheduled time' )
   );
   return $schedules;
@@ -428,10 +428,10 @@ add_filter('cron_schedules', 'cron_add_mytime');
 // Import xml to post
 if(class_exists("xmltowp")) {
   $xmltowp_plugin = new xmltowp();
-	
-	$xmltowp_plugin->xmltowp_init();
 
-	/*
+	// Uncomment it if testing	
+	//$xmltowp_plugin->xmltowp_init();
+
   if(isset($xmltowp_plugin)) {
 		register_activation_hook(__FILE__, array(&$xmltowp_plugin, 'xmltowp_init'));
 		if(!wp_next_scheduled('xmlschedule_hook')) {
@@ -439,7 +439,6 @@ if(class_exists("xmltowp")) {
 		}
 		add_action('xmlschedule_hook', array(&$xmltowp_plugin, 'xmltowp_init'));
   }
-	*/
 
 	// Remove the scheduled event
 	// http://codex.wordpress.org/Function_Reference/wp_clear_scheduled_hook

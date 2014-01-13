@@ -14,6 +14,11 @@
 require_once(ABSPATH . '/wp-admin/includes/post.php');
 require_once(ABSPATH . '/wp-admin/includes/import.php');
 
+// Need to fix schedule issue ..............................................
+
+// Global
+global $uom_db_version;
+$uom_db_version = "1.0";
 
 if(!class_exists("xmltowp")) {
 	class xmltowp {
@@ -183,7 +188,7 @@ if(!class_exists("xmltowp")) {
 			foreach($this->posts as $school_key => $school_posts) {
 				foreach ($school_posts as $post) {
 					extract($post);
-					if($post_id = post_exists($post_title, $post_content)) {
+					if($post_id = post_exists($post_title, '')) {
 						return;
 					} 
 					else
@@ -407,7 +412,8 @@ function uom_event_cpt() {
 
 function cron_add_mytime($schedules) {
 	$schedules['mytime'] = array(
-    'interval' => 21600,
+		'interval' => 21600,
+    //'interval' => 60,
     'display' => __( 'My scheduled time' )
   );
   return $schedules;
@@ -418,19 +424,48 @@ function _add_encoded_space_to_name(&$item, $key) {
 	$item = str_replace(' ', '%20', $item);
 }
 
+// Install db
+function uom_event_install() {
+  global $wpdb;
+  global $uom_event_db_version;
+
+  $table_name = $wpdb->prefix . "uom_event_log";
+
+  $sql = "CREATE TABLE $table_name (
+  	id mediumint(9) NOT NULL AUTO_INCREMENT,
+  	created_date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+  	post_id VARCHAR(55) DEFAULT '' NOT NULL,
+  	UNIQUE KEY id (id)
+    );
+	";
+
+   require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+   dbDelta($sql);
+
+   add_option("uom_event_db_version", $uom_event_db_version );
+}
 
 // Set up custom post type
 add_action('init', 'uom_event_cpt');
 
 // Custom cron schedule
 add_filter('cron_schedules', 'cron_add_mytime');
+
+// Install uom_event db
+register_activation_hook(__FILE__, 'uom_event_install');
+
+
  
 // Import xml to post
 if(class_exists("xmltowp")) {
   $xmltowp_plugin = new xmltowp();
 
 	// Uncomment it if testing	
-	//$xmltowp_plugin->xmltowp_init();
+	// $xmltowp_plugin->xmltowp_init();
+
+	// Remove the scheduled event
+  // http://codex.wordpress.org/Function_Reference/wp_clear_scheduled_hook
+  //wp_clear_scheduled_hook('xmlschedule_hook');
 
   if(isset($xmltowp_plugin)) {
 		register_activation_hook(__FILE__, array(&$xmltowp_plugin, 'xmltowp_init'));
@@ -439,10 +474,6 @@ if(class_exists("xmltowp")) {
 		}
 		add_action('xmlschedule_hook', array(&$xmltowp_plugin, 'xmltowp_init'));
   }
-
-	// Remove the scheduled event
-	// http://codex.wordpress.org/Function_Reference/wp_clear_scheduled_hook
-	//wp_clear_scheduled_hook('xmlschedule_hook');
 
 }
 

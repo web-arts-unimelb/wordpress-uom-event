@@ -20,9 +20,6 @@ $uom_db_version = "1.0";
 
 if(!class_exists("xmltowp")) {
 	class xmltowp {
-		var $posts;
-		var $sxml;
-
 		public static function get_instance()
     {
     	static $instance = null;
@@ -67,7 +64,6 @@ if(!class_exists("xmltowp")) {
 
 		function import() {
 			$this->get_school_posts();
-			$this->import_posts();
 		}
 
 		function get_school_posts() {
@@ -83,7 +79,6 @@ if(!class_exists("xmltowp")) {
 
 			array_walk($schools, '_add_encoded_space_to_name');
 
-			$this->posts = array(); // reset
 			foreach($schools as $school) {
 				$url = $this->_build_end_point($school);
 				$this->get_posts($school, $url);
@@ -94,24 +89,23 @@ if(!class_exists("xmltowp")) {
 		function get_posts($school, $url) {
 			$data = $this->_get_event_data($url);
 
-			$api_attr = "api-v1-entities-event-item";
-			
-			if(isset($data->$api_attr)) {
-				$index = 0;
+			if(isset($data->{'api-v1-entities-event-item'})) {
+				global $wpdb;	
 
 				// http://stackoverflow.com/questions/871422/looping-through-a-simplexml-object-or-turning-the-whole-thing-into-an-array
-				foreach($data->$api_attr as $event_obj) {
-
-					//test
-					/*
-					$log_data = "$school----------start-------------\n\n";
-          $log_data .= print_r($event_obj, true);
-          $log_data .= "----------end-------------\n\n";
-          uom_event_log('event_obj.txt', $log_data);
-					*/
-
+				$index = 0;
+        while(isset($data->{'api-v1-entities-event-item'}[$index])) {
+					$event_obj = $data->{'api-v1-entities-event-item'}[$index];
+	
 					$event_id = (string)$event_obj->id;
-					$event_title = (string)$event_obj->title;				
+					$event_title = (string)$event_obj->title;
+
+					// Check whether post already exists
+					if(post_exists($event_title, '')) {
+						$index++;
+						continue;
+					}
+			
 					$event_type = (string)$event_obj->type;
 
 					// Start time					
@@ -126,6 +120,9 @@ if(!class_exists("xmltowp")) {
 
 					// Start and end time
 					$event_start_end_time = $this->_theme_convert_start_end_date($event_start_time, $event_end_time);	
+
+					// Legacy field for sorting
+					$event_sorting_time = $this->_theme_convert_date($event_start_time_orig, 'Y-m-d'); // Ordering field
 
 					// Presenter
 					$event_presenter = "";
@@ -184,39 +181,64 @@ if(!class_exists("xmltowp")) {
       		$post_date_gmt = date("Y-m-d H:i:s"); //"2012-05-01 23:36:03";
       		$post_status = 'publish';
 
-      		$this->posts[$school][$index] = array(
-        		'post_type' => $post_type,
-        		'post_author' => $post_author,
-        		'post_date' => $post_date,
-        		'post_date_gmt' => $post_date_gmt,
-        		'post_content' => $event_description,
-        		'post_status' => $post_status,
+
+					// Prepare a post object
+					$inserted_post = array(
+						'post_type' => $post_type,
+          	'post_author' => $post_author, 
+          	'post_date' => $post_date, 
+          	'post_date_gmt' => $post_date_gmt, 
+						'post_content' => $event_description,
+          	'post_status' => $post_status,
 						'post_title' => $event_title,
-        	
-						// Custom fields
-						'event_start_end_time' => $event_start_end_time,
-        		'event_time' => $this->_theme_convert_date($event_start_time_orig, 'Y-m-d'), // Ordering field
-        		'event_location' => $event_location,
+					);
 
-						'event_presenter' => $event_presenter,
-						'event_description' => $event_description,
-						'event_info' => $event_info,
-						'event_booking' => $event_booking,
-						
-						'event_org_link' => $event_org_link,
-      		);
+					// Insert
+					$post_id = wp_insert_post($inserted_post);
 
-					//test
+          if(is_wp_error($post_id)) {
+          	return $post_id;
+					}
+
+          if(!$post_id) {
+         		return;
+          }
+	
+					// We are safe
+          // insert post meta
+          add_post_meta($post_id, '_wp_page_template', 'post_uom_event.php'); // Force it to use custom post template
+          add_post_meta($post_id, 'event_start_end_time', $event_start_end_time);
+          add_post_meta($post_id, 'event-time', $event_sorting_time);
+          add_post_meta($post_id, 'event_location', $event_location);
+
+          add_post_meta($post_id, 'event_presenter', $event_presenter);
+          add_post_meta($post_id, 'event_description', $event_description);
+          add_post_meta($post_id, 'event_info', $event_info);
+          add_post_meta($post_id, 'event_booking', $event_booking);
+
+          add_post_meta($post_id, 'event_org_link', $event_org_link);
+
+          // Category
+          $school_cat_id = $this->_translate_uom_event_category($school);
+          $event_cat_id = 5;
+
+          // This will insert into wp_term_taxonomy
+          // term_taxnonomy_id (field) -> term_id (field)-> wp_term (table) -> category name (field)
+          wp_set_post_categories($post_id, array($school_cat_id, $event_cat_id));
+
+          // Log
 					/*
-					$log_data = "$index----------start-------------\n\n";
-          $log_data .= print_r($this->posts[$school][$index], true);
-        	$log_data .= "----------end-------------\n\n";
-        	uom_event_log('orig_posts.txt', $log_data);			
+          $wpdb->insert(
+          	'wp_uom_event_log',
+             array(
+             	'created_date' => date("Y-m-d H:i:s"),
+              'post_id' => $post_id
+             )
+          );
 					*/
 
-      		$index++;					
-
-				} // End foreach
+					$index++;
+				} // End loop 
 
 			}	
 			else {
@@ -225,82 +247,6 @@ if(!class_exists("xmltowp")) {
 			}	
 		}
 
-		function import_posts() {
-			global $wpdb;
-
-			// test
-			/*
-			$log_data = "----------start-------------\n\n";
-			foreach($this->posts as $school_key => $school_posts) {
-				foreach($school_posts as $post) {
-					$log_data .= print_r($post, true);	
-				}	
-
-			}
-			$log_data .= "----------end-------------\n\n";
-      uom_event_log('mylog.txt', $log_data);
-			*/
-
-			//test
-			foreach($this->posts as $school_key => $school_posts) {
-
-				// test
-      	$log_data = "index---------start-------------$school_key\n\n";
-      	$log_data .= print_r($school_posts, true);
-      	$log_data .= "----------end-------------$school_key\n\n";
-      	uom_event_log('school_posts.txt', $log_data);				
-
-				foreach ($school_posts as $post) {
-					extract($post);
-					if($post_id = post_exists($post_title, '')) {
-						return;
-					} 
-					else
-					{
-						$post_id = wp_insert_post($post);
-
-						if( is_wp_error($post_id) )
-							return $post_id;
-					
-						if (!$post_id) {
-							return;
-						}
-					
-						// We are safe
-    				// insert post meta
-						add_post_meta($post_id, '_wp_page_template', 'post_uom_event.php'); // Force it to use custom post template
-						add_post_meta($post_id, 'event_start_end_time', $event_start_end_time);
-						add_post_meta($post_id, 'event-time', $event_time);			
-						add_post_meta($post_id, 'event_location', $event_location);
-
-						add_post_meta($post_id, 'event_presenter', $event_presenter);
-						add_post_meta($post_id, 'event_description', $event_description);
-						add_post_meta($post_id, 'event_info', $event_info);
-						add_post_meta($post_id, 'event_booking', $event_booking);
-					
-						add_post_meta($post_id, 'event_org_link', $event_org_link);
-
-						// Category
-						$school_cat_id = $this->_translate_uom_event_category($school_key);
-						$event_cat_id = 5;						
-
-						// This will insert into wp_term_taxonomy
-						// term_taxnonomy_id (field) -> term_id (field)-> wp_term (table) -> category name (field)
-						wp_set_post_categories($post_id, array($school_cat_id, $event_cat_id));
-
-						// Log
-						$wpdb->insert(
-							'wp_uom_event_log',
-							array(
-								'created_date' => date("Y-m-d H:i:s"),
-								'post_id' => $post_id
-							)
-						);
-
-					}
-				} // End foreach
-			} // End foreach
-		} 
 
 		private function _build_end_point($school) {
 			$part_get_from_tag = "http://events.unimelb.edu.au/api/v1/events/current/tagged/";
@@ -523,9 +469,15 @@ function uom_event_install() {
 function uom_event_log($file_name, $log_data) {
 	$dir_path = dirname(__FILE__);
 	$file_path = $dir_path. "/". $file_name;
-	//file_put_contents($file_path, $log_data, FILE_APPEND | LOCK_EX);
-	file_put_contents($file_path, $log_data, LOCK_EX);
+	file_put_contents($file_path, $log_data, FILE_APPEND | LOCK_EX);
 }
+
+function my_print_r($var) {
+	echo "<pre>";
+	print_r($var);
+	echo "</pre>";
+}
+
 
 // Set up custom post type
 add_action('init', 'uom_event_cpt');
@@ -543,14 +495,15 @@ if(class_exists("xmltowp")) {
   $xmltowp_plugin = xmltowp::get_instance();
 
 	// Uncomment it if testing	
-	$xmltowp_plugin->xmltowp_init();
+	//$xmltowp_plugin->xmltowp_init();
 
 	// Remove the scheduled event
-	//http://wordpress.org/support/topic/wp_clear_scheduled_hook-not-working
+	//http://wordpress.org/support/topic/wp_clear_scheduled_hook-not-workinga
+	/*
 	$timestamp = wp_next_scheduled('xmlschedule_hook');
 	wp_clear_scheduled_hook($timestamp, 'mytime', 'xmlschedule_hook');
+	*/
 
-	/*
   if(isset($xmltowp_plugin)) {
 		register_activation_hook(__FILE__, array(&$xmltowp_plugin, 'xmltowp_init'));
 		if(!wp_next_scheduled('xmlschedule_hook')) {
@@ -558,6 +511,5 @@ if(class_exists("xmltowp")) {
 		}
 		add_action('xmlschedule_hook', array(&$xmltowp_plugin, 'xmltowp_init'));
   }
-	*/
 }
 

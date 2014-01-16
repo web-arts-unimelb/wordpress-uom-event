@@ -20,12 +20,46 @@ $uom_db_version = "1.0";
 
 if(!class_exists("xmltowp")) {
 	class xmltowp {
-		var $posts = array ();
+		var $posts;
 		var $sxml;
 
-		function xmltowp() {
-			//constructor
-		}
+		public static function get_instance()
+    {
+    	static $instance = null;
+      if(null === $instance) {
+      	$instance = new static();
+      }
+
+      return $instance;
+    }
+
+		/**
+     * Protected constructor to prevent creating a new instance of the
+     * *Singleton* via the `new` operator from outside of this class.
+     */
+    protected function __construct()
+    {
+    }
+	
+		/**
+     * Private clone method to prevent cloning of the instance of the
+     * *Singleton* instance.
+     *
+     * @return void
+     */
+    private function __clone()
+    {
+    }
+
+    /**
+     * Private unserialize method to prevent unserializing of the *Singleton*
+     * instance.
+     *
+     * @return void
+     */
+    private function __wakeup()
+    {
+    }
 
 		function xmltowp_init() {
 			$this->import();
@@ -47,15 +81,9 @@ if(!class_exists("xmltowp")) {
 				'School of Social and Political Sciences',
 			);	
 
-			/*
-			$schools = array(
-				'Melbourne School of Government',
-				'School Of Culture And Communication'
-			);
-			*/
-
 			array_walk($schools, '_add_encoded_space_to_name');
 
+			$this->posts = array(); // reset
 			foreach($schools as $school) {
 				$url = $this->_build_end_point($school);
 				$this->get_posts($school, $url);
@@ -73,6 +101,15 @@ if(!class_exists("xmltowp")) {
 
 				// http://stackoverflow.com/questions/871422/looping-through-a-simplexml-object-or-turning-the-whole-thing-into-an-array
 				foreach($data->$api_attr as $event_obj) {
+
+					//test
+					/*
+					$log_data = "$school----------start-------------\n\n";
+          $log_data .= print_r($event_obj, true);
+          $log_data .= "----------end-------------\n\n";
+          uom_event_log('event_obj.txt', $log_data);
+					*/
+
 					$event_id = (string)$event_obj->id;
 					$event_title = (string)$event_obj->title;				
 					$event_type = (string)$event_obj->type;
@@ -169,9 +206,18 @@ if(!class_exists("xmltowp")) {
 						'event_org_link' => $event_org_link,
       		);
 
+					//test
+					/*
+					$log_data = "$index----------start-------------\n\n";
+          $log_data .= print_r($this->posts[$school][$index], true);
+        	$log_data .= "----------end-------------\n\n";
+        	uom_event_log('orig_posts.txt', $log_data);			
+					*/
+
       		$index++;					
 
 				} // End foreach
+
 			}	
 			else {
 				// No event data
@@ -182,7 +228,28 @@ if(!class_exists("xmltowp")) {
 		function import_posts() {
 			global $wpdb;
 
+			// test
+			/*
+			$log_data = "----------start-------------\n\n";
 			foreach($this->posts as $school_key => $school_posts) {
+				foreach($school_posts as $post) {
+					$log_data .= print_r($post, true);	
+				}	
+
+			}
+			$log_data .= "----------end-------------\n\n";
+      uom_event_log('mylog.txt', $log_data);
+			*/
+
+			//test
+			foreach($this->posts as $school_key => $school_posts) {
+
+				// test
+      	$log_data = "index---------start-------------$school_key\n\n";
+      	$log_data .= print_r($school_posts, true);
+      	$log_data .= "----------end-------------$school_key\n\n";
+      	uom_event_log('school_posts.txt', $log_data);				
+
 				foreach ($school_posts as $post) {
 					extract($post);
 					if($post_id = post_exists($post_title, '')) {
@@ -229,6 +296,7 @@ if(!class_exists("xmltowp")) {
 								'post_id' => $post_id
 							)
 						);
+
 					}
 				} // End foreach
 			} // End foreach
@@ -419,8 +487,8 @@ function uom_event_cpt() {
 
 function cron_add_mytime($schedules) {
 	$schedules['mytime'] = array(
-		//'interval' => 21600,
-    'interval' => 60,
+		'interval' => 21600,
+    //'interval' => 60,
     'display' => __( 'My scheduled time' )
   );
   return $schedules;
@@ -452,6 +520,13 @@ function uom_event_install() {
    add_option("uom_event_db_version", $uom_event_db_version );
 }
 
+function uom_event_log($file_name, $log_data) {
+	$dir_path = dirname(__FILE__);
+	$file_path = $dir_path. "/". $file_name;
+	//file_put_contents($file_path, $log_data, FILE_APPEND | LOCK_EX);
+	file_put_contents($file_path, $log_data, LOCK_EX);
+}
+
 // Set up custom post type
 add_action('init', 'uom_event_cpt');
 
@@ -465,15 +540,17 @@ register_activation_hook(__FILE__, 'uom_event_install');
  
 // Import xml to post
 if(class_exists("xmltowp")) {
-  $xmltowp_plugin = new xmltowp();
+  $xmltowp_plugin = xmltowp::get_instance();
 
 	// Uncomment it if testing	
-	//$xmltowp_plugin->xmltowp_init();
+	$xmltowp_plugin->xmltowp_init();
 
 	// Remove the scheduled event
-  // http://codex.wordpress.org/Function_Reference/wp_clear_scheduled_hook
-  //wp_clear_scheduled_hook('xmlschedule_hook');
+	//http://wordpress.org/support/topic/wp_clear_scheduled_hook-not-working
+	$timestamp = wp_next_scheduled('xmlschedule_hook');
+	wp_clear_scheduled_hook($timestamp, 'mytime', 'xmlschedule_hook');
 
+	/*
   if(isset($xmltowp_plugin)) {
 		register_activation_hook(__FILE__, array(&$xmltowp_plugin, 'xmltowp_init'));
 		if(!wp_next_scheduled('xmlschedule_hook')) {
@@ -481,6 +558,6 @@ if(class_exists("xmltowp")) {
 		}
 		add_action('xmlschedule_hook', array(&$xmltowp_plugin, 'xmltowp_init'));
   }
-
+	*/
 }
 

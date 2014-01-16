@@ -14,8 +14,6 @@
 require_once(ABSPATH . '/wp-admin/includes/post.php');
 require_once(ABSPATH . '/wp-admin/includes/import.php');
 
-// Need to fix schedule issue ..............................................
-
 // Global
 global $uom_db_version;
 $uom_db_version = "1.0";
@@ -86,12 +84,11 @@ if(!class_exists("xmltowp")) {
 
 					// End time
 					$event_end_time = (string)$event_obj->{'end-time'};
+					$event_end_time_orig = $event_end_time;
 					$event_end_time = $this->_theme_convert_date($event_end_time);
 
 					// Start and end time
-					$tmp_array = array($event_start_time, $event_end_time);
-					$tmp_text = $this->_theme_text_inline(" - ", $tmp_array);				
-					$event_start_end_time = $this->_theme_add_label('Time', $tmp_text);	
+					$event_start_end_time = $this->_theme_convert_start_end_date($event_start_time, $event_end_time);	
 
 					// Presenter
 					$event_presenter = "";
@@ -118,7 +115,7 @@ if(!class_exists("xmltowp")) {
 					$event_room_or_theatre = (string)$event_obj->location->{'room-or-theatre'};
 					$tmp_array = array($event_room_or_theatre, $event_building, $event_address);
 					$tmp_text = $this->_theme_text_inline(", ", $tmp_array);
-					$event_location = $this->_theme_add_label('Location', $tmp_text);
+					$event_location = $this->_theme_add_label('Where', $tmp_text);
 
 					// Information
 					$event_info_email = (string)$event_obj->information->email;
@@ -140,7 +137,7 @@ if(!class_exists("xmltowp")) {
 
 					// Link
 					$event_org_link = (string)$event_obj->link;
-					$event_org_link = $this->_theme_url($event_org_link, 'Original event on events.unimel.edu.au website');
+					$event_org_link = $this->_theme_url($event_org_link, 'Original event on events.unimelb.edu.au');
 					$event_org_link = $this->_theme_add_label('Link', $event_org_link);
 
 					// Force to custom post type
@@ -159,7 +156,7 @@ if(!class_exists("xmltowp")) {
         		'post_status' => $post_status,
 						'post_title' => $event_title,
         	
-						// Custom fields	
+						// Custom fields
 						'event_start_end_time' => $event_start_end_time,
         		'event_time' => $this->_theme_convert_date($event_start_time_orig, 'Y-m-d'), // Ordering field
         		'event_location' => $event_location,
@@ -348,7 +345,7 @@ if(!class_exists("xmltowp")) {
 			return $html;
 		}
 
-		private function _theme_convert_date($time_text, $format = 'Y-m-d H:i:s') {
+		private function _theme_convert_date($time_text, $format = 'l, j F Y, g:i:s a') {
 			$date = new DateTime($time_text);
       return $date->format($format);
 		}
@@ -391,6 +388,16 @@ if(!class_exists("xmltowp")) {
 			return $category_id;
 		}
 
+		private function _theme_convert_start_end_date($event_start_time, $event_end_time) {
+			$html = " 
+				<span><i>Start</i>: $event_start_time</span><br/>
+				<span><i>End</i>: $event_end_time</span>	
+			";
+
+			$html = $this->_theme_add_label('When', $html);	
+			return $html;
+		}
+
 	} // End class
 }
 
@@ -412,8 +419,8 @@ function uom_event_cpt() {
 
 function cron_add_mytime($schedules) {
 	$schedules['mytime'] = array(
-		'interval' => 21600,
-    //'interval' => 60,
+		//'interval' => 21600,
+    'interval' => 60,
     'display' => __( 'My scheduled time' )
   );
   return $schedules;
@@ -461,7 +468,7 @@ if(class_exists("xmltowp")) {
   $xmltowp_plugin = new xmltowp();
 
 	// Uncomment it if testing	
-	// $xmltowp_plugin->xmltowp_init();
+	//$xmltowp_plugin->xmltowp_init();
 
 	// Remove the scheduled event
   // http://codex.wordpress.org/Function_Reference/wp_clear_scheduled_hook

@@ -188,7 +188,7 @@ if(!class_exists("xmltowp")) {
           	'post_author' => $post_author, 
           	'post_date' => $post_date, 
           	'post_date_gmt' => $post_date_gmt, 
-						'post_content' => $event_description,
+						'post_content' => esc_html( $event_description ),
           	'post_status' => $post_status,
 						'post_title' => $event_title,
 					);
@@ -207,16 +207,15 @@ if(!class_exists("xmltowp")) {
 					// We are safe
           // insert post meta
           add_post_meta($post_id, '_wp_page_template', 'post_uom_event.php'); // Force it to use custom post template
-          add_post_meta($post_id, 'event_start_end_time', $event_start_end_time);
+          add_post_meta($post_id, 'event_start_end_time', esc_html($event_start_end_time));
           add_post_meta($post_id, 'event-time', $event_sorting_time);
-          add_post_meta($post_id, 'event_location', $event_location);
+          add_post_meta($post_id, 'event_location', esc_html($event_location));
 
-          add_post_meta($post_id, 'event_presenter', $event_presenter);
-          add_post_meta($post_id, 'event_description', $event_description);
-          add_post_meta($post_id, 'event_info', $event_info);
-          add_post_meta($post_id, 'event_booking', $event_booking);
-
-          add_post_meta($post_id, 'event_org_link', $event_org_link);
+          add_post_meta($post_id, 'event_presenter', esc_html($event_presenter));
+          //add_post_meta($post_id, 'event_description', esc_html($event_description)); // no need
+          add_post_meta($post_id, 'event_info', esc_html($event_info));
+          add_post_meta($post_id, 'event_booking', esc_html($event_booking));
+          add_post_meta($post_id, 'event_org_link', esc_html($event_org_link));
 
           // Category
           $school_cat_id = $this->_translate_uom_event_category($school);

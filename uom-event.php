@@ -99,6 +99,13 @@ if(!class_exists("xmltowp")) {
 	
 					$event_id = (string)$event_obj->id;
 					$event_title = (string)$event_obj->title;
+					$event_is_public = (string)$event_obj->public;
+
+					// If not public, continue
+					if($event_is_public !== 'true') {
+						$index++;
+						continue;
+					}
 
 					// Check whether post already exists
 					if(post_exists($event_title, '')) {
@@ -120,6 +127,9 @@ if(!class_exists("xmltowp")) {
 
 					// Start and end time
 					$event_start_end_time = $this->_theme_convert_start_end_date($event_start_time, $event_end_time);	
+
+					// Start time
+					$event_start_time_with_label = $this->_theme_add_label('When', $event_start_time);
 
 					// Legacy field for sorting
 					$event_sorting_time = $this->_theme_convert_date($event_start_time_orig, 'Y-m-d'); // Ordering field
@@ -208,6 +218,8 @@ if(!class_exists("xmltowp")) {
           // insert post meta
           add_post_meta($post_id, '_wp_page_template', 'post_uom_event.php'); // Force it to use custom post template
           add_post_meta($post_id, 'event_start_end_time', esc_html($event_start_end_time));
+					add_post_meta($post_id, 'event_start_time', esc_html($event_start_time_with_label));										
+
           add_post_meta($post_id, 'event-time', $event_sorting_time);
           add_post_meta($post_id, 'event_location', esc_html($event_location));
 
@@ -226,7 +238,7 @@ if(!class_exists("xmltowp")) {
           wp_set_post_categories($post_id, array($school_cat_id, $event_cat_id));
 
           // Log
-					/*
+					/* Remove logging
           $wpdb->insert(
           	'wp_uom_event_log',
              array(
@@ -274,7 +286,7 @@ if(!class_exists("xmltowp")) {
           }
         }
         else {
-          //test
+          //test: show all data
 					/*
           echo "<pre>";
           print_r($data);

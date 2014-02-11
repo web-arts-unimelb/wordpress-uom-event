@@ -98,7 +98,7 @@ if(!class_exists("xmltowp")) {
 					$event_obj = $data->{'api-v1-entities-event-item'}[$index];
 	
 					$event_id = (string)$event_obj->id;
-					$event_title = (string)$event_obj->title;
+					$event_title = trim( (string)$event_obj->title );
 					$event_is_public = (string)$event_obj->public;
 
 					// If not public, continue

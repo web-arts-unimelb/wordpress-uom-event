@@ -370,7 +370,7 @@ if(!class_exists("xmltowp")) {
 			return $html;
 		}
 
-		private function _theme_convert_date($time_text, $format = 'l, j F Y, g:i:s a') {
+		private function _theme_convert_date($time_text, $format = 'l, j F Y, g:i a') {
 			$date = new DateTime($time_text);
       return $date->format($format);
 		}

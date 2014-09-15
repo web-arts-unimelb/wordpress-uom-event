@@ -75,198 +75,220 @@ if(!class_exists("xmltowp")) {
 				'School Of Culture And Communication',	
 				'School of Languages and Linguistics',
 				'School of Social and Political Sciences',
+				'Dean\'s lecture',
+				'Named lecture',
 			);	
 
 			array_walk($schools, '_add_encoded_space_to_name');
 
+			$total_data = array();
 			foreach($schools as $school) {
 				$url = $this->_build_end_point($school);
-				$this->get_posts($school, $url);
+				$this->get_posts($url, $total_data);
 			}
 
+			$flat_array = $this->_array_flatten($total_data);
+			usort($flat_array, array($this, "_cmp_event_data"));
+
+			$this->_insert_event_data($flat_array);
 		}
 
-		function get_posts($school, $url) {
-			$data = $this->_get_event_data($url);
-
-			if(isset($data->{'api-v1-entities-event-item'})) {
-				global $wpdb;	
-
-				// http://stackoverflow.com/questions/871422/looping-through-a-simplexml-object-or-turning-the-whole-thing-into-an-array
-				$index = 0;
-        while(isset($data->{'api-v1-entities-event-item'}[$index])) {
-					$event_obj = $data->{'api-v1-entities-event-item'}[$index];
-	
-					$event_id = (string)$event_obj->id;
-					$event_title = trim( (string)$event_obj->title );
-					$event_is_public = (string)$event_obj->public;
-
-					// If not public, continue
-					if($event_is_public !== 'true') {
-						$index++;
-						continue;
-					}
-
-					// Check whether post already exists
-					if(post_exists($event_title, '')) {
-						$index++;
-						continue;
-					}
-			
-					$event_type = (string)$event_obj->type;
-
-					// Start time					
-					$event_start_time = (string)$event_obj->{'start-time'};
-					$event_start_time_orig = $event_start_time;
-					$event_start_time = $this->_theme_convert_date($event_start_time);
-
-					// End time
-					$event_end_time = (string)$event_obj->{'end-time'};
-					$event_end_time_orig = $event_end_time;
-					$event_end_time = $this->_theme_convert_date($event_end_time);
-
-					// Start and end time
-					$event_start_end_time = $this->_theme_convert_start_end_date($event_start_time, $event_end_time);	
-
-					// Start time
-					$event_start_time_with_label = $this->_theme_add_label('When', $event_start_time);
-
-					// Legacy field for sorting
-					$event_sorting_time = $this->_theme_convert_date($event_start_time_orig, 'Y-m-d'); // Ordering field
-
-					// Presenter
-					$event_presenter = "";
-					foreach($event_obj->presenters as $presenter) {
-						// Event may not have a presenter yet
-						if(isset($presenter->presenter)) {
-							$link = (string)$presenter->presenter->link;
-							$title = (string)$presenter->presenter->title;
-							$first_name = (string)$presenter->presenter->{'first-name'};
-							$last_name = (string)$presenter->presenter->{'last-name'};
-
-							$event_presenter .= '<a href="'. $link. '">'. $title. " ". $first_name. ' '. $last_name. '</a>';
-						}					
-					}
-					$event_presenter = $this->_theme_add_label('Presenter', $event_presenter);					
-
-					// Description
-					$event_description = (string)$event_obj->{'description-html'};
-					$event_description = $this->_theme_add_label_no_trail_br('Description', $event_description);	
-
-					// Location
-					$event_address = (string)$event_obj->location->address;
-					$event_building = (string)$event_obj->location->building;
-					$event_room_or_theatre = (string)$event_obj->location->{'room-or-theatre'};
-					$tmp_array = array($event_room_or_theatre, $event_building, $event_address);
-					$tmp_text = $this->_theme_text_inline(", ", $tmp_array);
-					$event_location = $this->_theme_add_label('Where', $tmp_text);
-
-					// Information
-					$event_info_email = (string)$event_obj->information->email;
-					$event_info_phone = (string)$event_obj->information->phone;			
-					$event_info_url = (string)$event_obj->information->url;
-					$event_info_url = $this->_theme_url($event_info_url);
-					$tmp_array = array($event_info_email, $event_info_phone, $event_info_url);
-					$tmp_text = $this->_theme_list($tmp_array);
-					$event_info = $this->_theme_add_label_no_trail_br('Information', $tmp_text);
-
-					// Booking
-					$event_booking_email = (string)$event_obj->booking->email;
-					$event_booking_phone = (string)$event_obj->booking->phone;
-					$event_booking_url = (string)$event_obj->booking->url;
-					$event_booking_url = $this->_theme_url($event_booking_url);
-					$tmp_array = array($event_booking_email, $event_booking_phone, $event_booking_url);
-          $tmp_text = $this->_theme_list($tmp_array);
-					$event_booking = $this->_theme_add_label_no_trail_br('Booking', $tmp_text);
-
-					// Link
-					$event_org_link = (string)$event_obj->link;
-					$event_org_link = $this->_theme_url($event_org_link, 'Original event on events.unimelb.edu.au');
-					$event_org_link = $this->_theme_add_label('Link', $event_org_link);
-
-					// Force to custom post type
-      		$post_type = "uom_event";
-      		$post_author = 3; // Christ strong as poster
-      		$post_date = date("Y-m-d H:i:s"); //"2012-05-01 23:36:03";
-      		$post_date_gmt = date("Y-m-d H:i:s"); //"2012-05-01 23:36:03";
-      		$post_status = 'publish';
+		
+		function get_posts($url, &$total_data) {
+			$data_array = $this->_get_event_data($url);
+			$total_data[] = $data_array;
+		}
 
 
-					// Prepare a post object
-					$inserted_post = array(
-						'post_type' => $post_type,
-          	'post_author' => $post_author, 
-          	'post_date' => $post_date, 
-          	'post_date_gmt' => $post_date_gmt, 
-						'post_content' => esc_html( $event_description ),
-          	'post_status' => $post_status,
-						'post_title' => $event_title,
-					);
+		private function _insert_event_data($array) {
+      global $wpdb;
 
-					// Insert
-					$post_id = wp_insert_post($inserted_post);
+      foreach($array as $event_obj) {
+				$event_id = (string)$event_obj->id;
+				$event_title = trim( (string)$event_obj->title );
+				$event_is_public = (string)$event_obj->public;
 
-          if(is_wp_error($post_id)) {
-          	return $post_id;
-					}
-
-          if(!$post_id) {
-         		return;
-          }
-	
-					// We are safe
-          // insert post meta
-          add_post_meta($post_id, '_wp_page_template', 'post_uom_event.php'); // Force it to use custom post template
-          add_post_meta($post_id, 'event_start_end_time', esc_html($event_start_end_time));
-					add_post_meta($post_id, 'event_start_time', esc_html($event_start_time_with_label));										
-
-          add_post_meta($post_id, 'event-time', $event_sorting_time);
-          add_post_meta($post_id, 'event_location', esc_html($event_location));
-
-          add_post_meta($post_id, 'event_presenter', esc_html($event_presenter));
-          //add_post_meta($post_id, 'event_description', esc_html($event_description)); // no need
-          add_post_meta($post_id, 'event_info', esc_html($event_info));
-          add_post_meta($post_id, 'event_booking', esc_html($event_booking));
-          add_post_meta($post_id, 'event_org_link', esc_html($event_org_link));
-
-          // Category
-          $school_cat_id = $this->_translate_uom_event_category($school);
-          $event_cat_id = 5;
-
-          // This will insert into wp_term_taxonomy
-          // term_taxnonomy_id (field) -> term_id (field)-> wp_term (table) -> category name (field)
-          wp_set_post_categories($post_id, array($school_cat_id, $event_cat_id));
-
-          // Log
-					/* Remove logging
-          $wpdb->insert(
-          	'wp_uom_event_log',
-             array(
-             	'created_date' => date("Y-m-d H:i:s"),
-              'post_id' => $post_id
-             )
-          );
-					*/
-
+				// If not public, continue
+				if($event_is_public !== 'true') {
 					$index++;
-				} // End loop 
+					continue;
+				}
 
-			}	
-			else {
-				// No event data
-				return;	
-			}	
+				// Check whether post already exists
+				if(post_exists($event_title, '')) {
+					$index++;
+					continue;
+				}
+		
+				$event_type = (string)$event_obj->type;
+
+				// Start time					
+				$event_start_time = (string)$event_obj->{'start-time'};
+				$event_start_time_orig = $event_start_time;
+				$event_start_time = $this->_theme_convert_date($event_start_time);
+
+				
+				//test
+				/*
+				echo "<br/>";
+				echo $event_title. " | ". $event_start_time;
+				echo "<br/>";
+				*/
+
+				// End time
+				$event_end_time = (string)$event_obj->{'end-time'};
+				$event_end_time_orig = $event_end_time;
+				$event_end_time = $this->_theme_convert_date($event_end_time);
+
+				// Start and end time
+				$event_start_end_time = $this->_theme_convert_start_end_date($event_start_time, $event_end_time);	
+
+				// Start time
+				$event_start_time_with_label = $this->_theme_add_label('When', $event_start_time);
+
+				// Legacy field for sorting
+				$event_sorting_time = $this->_theme_convert_date($event_start_time_orig, 'Y-m-d'); // Ordering field
+
+				// Presenter
+				$event_presenter = "";
+				foreach($event_obj->presenters as $presenter) {
+					// Event may not have a presenter yet
+					if(isset($presenter->presenter)) {
+						$link = (string)$presenter->presenter->link;
+						$title = (string)$presenter->presenter->title;
+						$first_name = (string)$presenter->presenter->{'first-name'};
+						$last_name = (string)$presenter->presenter->{'last-name'};
+
+						$event_presenter .= '<a href="'. $link. '">'. $title. " ". $first_name. ' '. $last_name. '</a>';
+					}					
+				}
+				$event_presenter = $this->_theme_add_label('Presenter', $event_presenter);					
+
+				// Description
+				$event_description = (string)$event_obj->{'description-html'};
+				$event_description = $this->_theme_add_label_no_trail_br('Description', $event_description);	
+
+				// Location
+				$event_address = (string)$event_obj->location->address;
+				$event_building = (string)$event_obj->location->building;
+				$event_room_or_theatre = (string)$event_obj->location->{'room-or-theatre'};
+				$tmp_array = array($event_room_or_theatre, $event_building, $event_address);
+				$tmp_text = $this->_theme_text_inline(", ", $tmp_array);
+				$event_location = $this->_theme_add_label('Where', $tmp_text);
+
+				// Information
+				$event_info_email = (string)$event_obj->information->email;
+				$event_info_phone = (string)$event_obj->information->phone;			
+				$event_info_url = (string)$event_obj->information->url;
+				$event_info_url = $this->_theme_url($event_info_url);
+				$tmp_array = array($event_info_email, $event_info_phone, $event_info_url);
+				$tmp_text = $this->_theme_list($tmp_array);
+				$event_info = $this->_theme_add_label_no_trail_br('Information', $tmp_text);
+
+				// Booking
+				$event_booking_email = (string)$event_obj->booking->email;
+				$event_booking_phone = (string)$event_obj->booking->phone;
+				$event_booking_url = (string)$event_obj->booking->url;
+				$event_booking_url = $this->_theme_url($event_booking_url);
+				$tmp_array = array($event_booking_email, $event_booking_phone, $event_booking_url);
+        $tmp_text = $this->_theme_list($tmp_array);
+				$event_booking = $this->_theme_add_label_no_trail_br('Booking', $tmp_text);
+
+				// Link
+				$event_org_link = (string)$event_obj->link;
+				$event_org_link = $this->_theme_url($event_org_link, 'Original event on events.unimelb.edu.au');
+				$event_org_link = $this->_theme_add_label('Link', $event_org_link);
+
+				// Force to custom post type
+    		$post_type = "uom_event";
+    		$post_author = 3; // Christ strong as poster
+    		$post_date = date("Y-m-d H:i:s"); //"2012-05-01 23:36:03";
+    		$post_date_gmt = date("Y-m-d H:i:s"); //"2012-05-01 23:36:03"; 
+    		$post_status = 'publish';
+
+
+				// Prepare a post object
+				$inserted_post = array(
+					'post_type' => $post_type,
+        	'post_author' => $post_author, 
+        	'post_date' => $post_date, 
+        	'post_date_gmt' => $post_date_gmt, 
+					'post_content' => esc_html( $event_description ),
+        	'post_status' => $post_status,
+					'post_title' => $event_title,
+				);
+
+				// Insert
+				$post_id = wp_insert_post($inserted_post);
+
+        if(is_wp_error($post_id)) {
+        	return $post_id;
+				}
+
+        if(!$post_id) {
+       		return;
+        }
+
+				// We are safe
+        // insert post meta
+        add_post_meta($post_id, '_wp_page_template', 'post_uom_event.php'); // Force it to use custom post template
+        add_post_meta($post_id, 'event_start_end_time', esc_html($event_start_end_time));
+				add_post_meta($post_id, 'event_start_time', esc_html($event_start_time_with_label));										
+
+        add_post_meta($post_id, 'event-time', $event_sorting_time);
+        add_post_meta($post_id, 'event_location', esc_html($event_location));
+
+        add_post_meta($post_id, 'event_presenter', esc_html($event_presenter));
+        //add_post_meta($post_id, 'event_description', esc_html($event_description)); // no need
+        add_post_meta($post_id, 'event_info', esc_html($event_info));
+        add_post_meta($post_id, 'event_booking', esc_html($event_booking));
+        add_post_meta($post_id, 'event_org_link', esc_html($event_org_link));
+
+        // Category
+        $school_cat_id = $this->_translate_uom_event_category($school);
+        $event_cat_id = 5;
+
+        // This will insert into wp_term_taxonomy
+        // term_taxnonomy_id (field) -> term_id (field)-> wp_term (table) -> category name (field)
+        wp_set_post_categories($post_id, array($school_cat_id, $event_cat_id));
+      }
+    }
+
+
+		// http://stackoverflow.com/questions/526556/how-to-flatten-a-multi-dimensional-array-to-simple-one-in-php
+		private function _array_flatten($array) {
+			$return = array();
+   		foreach ($array as $key => $value) {
+      	if (is_array($value))
+				{ 
+					$return = array_merge($return, $this->_array_flatten($value));
+				}
+       	else 
+				{
+					$return[$key] = $value;
+				}
+			}
+			return $return;
 		}
 
 
 		private function _build_end_point($school) {
-			$part_get_from_tag = "http://events.unimelb.edu.au/api/v1/events/current/tagged/";
-			$part_school_xml = $school. ".xml";
+			$foa_text = "Faculty%20of%20Arts";
+			$curr_year = date('Y');
+
+			$part_get_from_tag = "http://events.unimelb.edu.au/api/v1/events/all/tagged/";
+			$part_school_xml = $foa_text. ','. $school. ".xml";
 			$part_token = "?auth_token=dsv5n24uLUqtSyZ5Darq";
+			$part_year = "&filter=year&year=$curr_year";
 			$part_full = "&full=true"; 
 
 			//http://events.unimelb.edu.au/api/v1/events/current/tagged/School%20Of%20Culture%20And%20Communication.xml?auth_token=dsv5n24uLUqtSyZ5Darq&full=true
-			$end_point = $part_get_from_tag. $part_school_xml. $part_token. $part_full;
+			$end_point = $part_get_from_tag. $part_school_xml. $part_token. $part_year. $part_full;
+
+			//test
+			//print_r($end_point);
+			//echo "<br/>";
+
 			return $end_point;
     }
 
@@ -286,18 +308,34 @@ if(!class_exists("xmltowp")) {
           }
         }
         else {
-          //test: show all data
-					/*
-          echo "<pre>";
-          print_r($data);
-          echo "</pre>";
-					*/
-
-					$return_data = $data;
+					$data_array = $this->_convert_event_data_to_array($data);
+					//usort($data_array, array($this, "_cmp_event_data"));
+					$return_data = $data_array;
         }
       }
 
 			return $return_data;
+		}
+
+	
+		// It seems $data->{'api-v1-entities-event-item'} only returns the first element.	
+		private function _convert_event_data_to_array($data) {
+			$return_array = array();
+
+			$index = 0;
+      while(isset($data->{'api-v1-entities-event-item'}[$index])) {
+      	$event_obj = $data->{'api-v1-entities-event-item'}[$index];
+				$return_array[] = $event_obj;
+				++$index;
+			}
+
+			return $return_array;
+		}
+
+		private function _cmp_event_data($a, $b) {
+			$start_time_a = strtotime( (string)$a->{'start-time'} );
+			$start_time_b = strtotime( (string)$b->{'start-time'} );
+			return $start_time_a - $start_time_b;
 		}
 
 		private function _theme_add_label($label, $text) {

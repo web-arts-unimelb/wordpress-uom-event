@@ -90,7 +90,7 @@ if(!class_exists("xmltowp")) {
 			$flat_array = $this->_array_flatten($total_data);
 			usort($flat_array, array($this, "_cmp_event_data"));
 
-			$this->_insert_event_data($flat_array);
+			$this->_insert_event_data($flat_array, $school);
 		}
 
 		
@@ -100,7 +100,7 @@ if(!class_exists("xmltowp")) {
 		}
 
 
-		private function _insert_event_data($array) {
+		private function _insert_event_data($array, $school) {
       global $wpdb;
 
       foreach($array as $event_obj) {
@@ -110,16 +110,13 @@ if(!class_exists("xmltowp")) {
 
 				// If not public, continue
 				if($event_is_public !== 'true') {
-					$index++;
 					continue;
 				}
 
-				// Check whether post already exists
-				if(post_exists($event_title, '')) {
-					$index++;
+				if($this->_is_post_existed($event_title)) {
 					continue;
 				}
-		
+
 				$event_type = (string)$event_obj->type;
 
 				// Start time					
@@ -250,7 +247,13 @@ if(!class_exists("xmltowp")) {
 
         // This will insert into wp_term_taxonomy
         // term_taxnonomy_id (field) -> term_id (field)-> wp_term (table) -> category name (field)
-        wp_set_post_categories($post_id, array($school_cat_id, $event_cat_id));
+        $test_cat = wp_set_post_categories($post_id, array($school_cat_id, $event_cat_id));
+
+				/*
+				//test
+				$msg = $school. " | ". $school_cat_id. " | ". $post_id. " | ". print_r($test_cat);  
+				my_print_r($msg);
+				*/
       }
     }
 
@@ -281,11 +284,12 @@ if(!class_exists("xmltowp")) {
 		}
 
 		private function _build_end_point($school) {
-			$foa_text = "Faculty%20of%20Arts";
+			//$foa_text = "Faculty%20of%20Arts,";
+			$foa_text = "";
 			$curr_year = date('Y');
 
 			$part_get_from_tag = "http://events.unimelb.edu.au/api/v1/events/all/tagged/";
-			$part_school_xml = $foa_text. ','. $school. ".xml";
+			$part_school_xml = $foa_text. $school. ".xml";
 			$part_token = "?auth_token=dsv5n24uLUqtSyZ5Darq";
 			$part_year = "&filter=year&year=$curr_year";
 			$part_full = "&full=true"; 
@@ -334,6 +338,31 @@ if(!class_exists("xmltowp")) {
 			}
 
 			return $return_array;
+		}
+
+		
+		private function _is_post_existed($title = '') {
+			global $wpdb;
+			$new_title = esc_sql($title); 
+
+			$sql = "
+				SELECT 
+					count(*)
+				FROM
+					wp_posts
+				WHERE
+					post_title = '$new_title'
+			";
+
+			$num = $wpdb->get_var($sql);
+			if($num > 0) {
+				//my_print_r("dup ". $title);
+				return true;
+			}
+			else {
+				//my_print_r("no dup ". $title);
+				return false;
+			}		
 		}
 
 		private function _cmp_event_data($a, $b) {
@@ -440,6 +469,14 @@ if(!class_exists("xmltowp")) {
       }
 			elseif($school_name == 'School of Social and Political Sciences') {
 				$category_id = 12;
+      }
+			elseif($school_name == 'Dean\'s lecture') {
+				// Gary's local
+        $category_id = 73;
+      }
+			elseif($school_name == 'Named lecture') {
+				// Gary's local
+        $category_id = 75;
       }
 			else {
 				$category_id = 1;

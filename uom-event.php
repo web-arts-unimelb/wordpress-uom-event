@@ -84,23 +84,26 @@ if(!class_exists("xmltowp")) {
 			$total_data = array();
 			foreach($schools as $school) {
 				$url = $this->_build_end_point($school);
-				$this->get_posts($url, $total_data);
+				$this->get_posts($url, $total_data, $school);
 			}
 
-			$flat_array = $this->_array_flatten($total_data);
+			$flat_array = $total_data;
 			usort($flat_array, array($this, "_cmp_event_data"));
-
-			$this->_insert_event_data($flat_array, $school);
+			$this->_insert_event_data($flat_array);
 		}
 
 		
-		function get_posts($url, &$total_data) {
+		function get_posts($url, &$total_data, $school) {
 			$data_array = $this->_get_event_data($url);
-			$total_data[] = $data_array;
+
+			foreach($data_array as $item) {
+				$item->my_category = $school;
+				$total_data[] = $item;
+			}
 		}
 
 
-		private function _insert_event_data($array, $school) {
+		private function _insert_event_data($array) {
       global $wpdb;
 
       foreach($array as $event_obj) {
@@ -210,12 +213,6 @@ if(!class_exists("xmltowp")) {
 				// Insert
 				$post_id = wp_insert_post($inserted_post);
 
-				/*
-				//test
-				$msg = $post_id. ' | '. $post_title. " | ". $event_end_time_orig. " | ". $post_date. " | "; 
-				my_print_r($msg);
-				*/
-
         if(is_wp_error($post_id)) {
 					die('Wordpress error');
         	return $post_id;
@@ -242,7 +239,7 @@ if(!class_exists("xmltowp")) {
         add_post_meta($post_id, 'event_org_link', esc_html($event_org_link));
 
         // Category
-        $school_cat_id = $this->_translate_uom_event_category($school);
+        $school_cat_id = $this->_translate_uom_event_category($event_obj->my_category);
         $event_cat_id = 5;
 
         // This will insert into wp_term_taxonomy
@@ -251,13 +248,15 @@ if(!class_exists("xmltowp")) {
 
 				/*
 				//test
-				$msg = $school. " | ". $school_cat_id. " | ". $post_id. " | ". print_r($test_cat);  
+				$msg = $school. " | ". $school_cat_id. " | ". $post_id;
+				my_print_r($test_cat); 
 				my_print_r($msg);
 				*/
       }
     }
 
 
+		/*
 		// http://stackoverflow.com/questions/526556/how-to-flatten-a-multi-dimensional-array-to-simple-one-in-php
 		private function _array_flatten($array) {
 			$return = array();
@@ -273,6 +272,7 @@ if(!class_exists("xmltowp")) {
 			}
 			return $return;
 		}
+		*/
 
 		// http://stackoverflow.com/questions/17909871/getting-date-format-m-d-y-his-u-from-milliseconds
 		// or a microtime() value of 0.98236000 1407400573, this returns 

@@ -68,21 +68,15 @@ if(!class_exists("xmltowp")) {
 
 		function get_school_posts() {
 			$schools = array(
-				/*
 				'Asia Institute',
 				'Graduate School of Humanities and Social Sciences',
-				*/
 				'Melbourne School of Government',
-				/*				
 				'School of Historical and Philosophical Studies',
 				'School Of Culture And Communication',	
 				'School of Languages and Linguistics',
-				*/
-				//'School of Social and Political Sciences',
-				/*
+				'School of Social and Political Sciences',
 				'Dean\'s lecture',
 				'Named lecture',
-				*/
 			);	
 
 			array_walk($schools, '_add_encoded_space_to_name');
@@ -96,9 +90,6 @@ if(!class_exists("xmltowp")) {
 			$flat_array = $this->_array_flatten($total_data);
 			usort($flat_array, array($this, "_cmp_event_data"));
 
-			//test
-			//my_print_r($flat_array);
-		
 			$this->_insert_event_data($flat_array);
 		}
 
@@ -119,14 +110,12 @@ if(!class_exists("xmltowp")) {
 
 				// If not public, continue
 				if($event_is_public !== 'true') {
-					//my_print_r('not public '. $event_title);
 					$index++;
 					continue;
 				}
 
 				// Check whether post already exists
 				if(post_exists($event_title, '')) {
-					//my_print_r('title exist '. $event_title);
 					$index++;
 					continue;
 				}
@@ -137,14 +126,6 @@ if(!class_exists("xmltowp")) {
 				$event_start_time = (string)$event_obj->{'start-time'};
 				$event_start_time_orig = $event_start_time;
 				$event_start_time = $this->_theme_convert_date($event_start_time);
-
-				
-				//test
-				/*
-				echo "<br/>";
-				echo $event_title. " | ". $event_start_time;
-				echo "<br/>";
-				*/
 
 				// End time
 				$event_end_time = (string)$event_obj->{'end-time'};
@@ -232,15 +213,19 @@ if(!class_exists("xmltowp")) {
 				// Insert
 				$post_id = wp_insert_post($inserted_post);
 
+				/*
 				//test
 				$msg = $post_id. ' | '. $post_title. " | ". $event_end_time_orig. " | ". $post_date. " | "; 
 				my_print_r($msg);
+				*/
 
         if(is_wp_error($post_id)) {
+					die('Wordpress error');
         	return $post_id;
 				}
 
         if(!$post_id) {
+					die('post_id is zero');
        		return;
         }
 
@@ -287,10 +272,12 @@ if(!class_exists("xmltowp")) {
 		}
 
 		// http://stackoverflow.com/questions/17909871/getting-date-format-m-d-y-his-u-from-milliseconds
-		// or a microtime() value of 0.98236000 1407400573, this returns 08-07-14 01:08:13.982.
+		// or a microtime() value of 0.98236000 1407400573, this returns 
+		//"2012-05-01 23:36:03";
 		private function _get_curr_datetime_micro() {
-			$t = explode(" ", microtime());
-			return date("m-d-y H:i:s", $t[1]). substr((string)$t[0],1,4);
+			//$t = explode(" ", microtime());
+			//return date("Y-m-d H:i:s", $t[1]). substr((string)$t[0],1,4);
+			return date("Y-m-d H:i:s");
 		}
 
 		private function _build_end_point($school) {
@@ -305,10 +292,6 @@ if(!class_exists("xmltowp")) {
 
 			//http://events.unimelb.edu.au/api/v1/events/current/tagged/School%20Of%20Culture%20And%20Communication.xml?auth_token=dsv5n24uLUqtSyZ5Darq&full=true
 			$end_point = $part_get_from_tag. $part_school_xml. $part_token. $part_year. $part_full;
-
-			//test
-			//print_r($end_point);
-			//echo "<br/>";
 
 			return $end_point;
     }
@@ -437,13 +420,6 @@ if(!class_exists("xmltowp")) {
 		private function _translate_uom_event_category($school_name) {
 			$school_name = str_replace("%20", " ", $school_name);
 
-			//test
-			/*
-			echo "<pre>";
-			print_r($school_name);
-			echo "</pre>";
-			*/
-
 			if($school_name == 'Asia Institute') {
 				$category_id = 3;	
 			}
@@ -565,7 +541,7 @@ if(class_exists("xmltowp")) {
   $xmltowp_plugin = xmltowp::get_instance();
 
 	// Uncomment it if testing	
-	$xmltowp_plugin->xmltowp_init();
+	//$xmltowp_plugin->xmltowp_init();
 
 	// Remove the scheduled event
 	//http://wordpress.org/support/topic/wp_clear_scheduled_hook-not-workinga
